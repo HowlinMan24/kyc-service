@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: kyc
+      MYSQL_USER: kyc
+      MYSQL_PASSWORD: kyc
+    ports: ['3306:3306']
+    volumes:
+      - kyc-mysql:/var/lib/mysql
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-pkyc']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_DIALECT: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: kyc
+      DB_USER: kyc
+      DB_PASSWORD: kyc
+      JWT_SECRET: change-me-to-a-long-random-string-please
+    ports: ['3000:3000']
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  kyc-mysql:
